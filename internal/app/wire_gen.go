@@ -11,6 +11,7 @@ import (
 	"fmt"
 	clickhouse2 "github.com/ClickHouse/clickhouse-go/v2"
 	"github.com/ClickHouse/clickhouse-go/v2/lib/driver"
+	"log"
 	"prices/internal/broker"
 	"prices/internal/config"
 	"prices/internal/events"
@@ -45,6 +46,7 @@ func Init() (*App, func(), error) {
 // wire.go:
 
 func initDB(cfg *config.Config) (driver.Conn, func(), error) {
+	log.Println(cfg.DB)
 	conn, err := clickhouse2.Open(&clickhouse2.Options{
 		Addr: []string{fmt.Sprintf("%s:%d", cfg.DB.Host, cfg.DB.Port)},
 		Auth: clickhouse2.Auth{
@@ -52,7 +54,6 @@ func initDB(cfg *config.Config) (driver.Conn, func(), error) {
 			Username: cfg.DB.User,
 			Password: cfg.DB.Pass,
 		},
-		DialTimeout:     time.Second,
 		MaxOpenConns:    10,
 		MaxIdleConns:    5,
 		ConnMaxLifetime: time.Hour,
@@ -64,7 +65,7 @@ func initDB(cfg *config.Config) (driver.Conn, func(), error) {
 	if err := conn.Ping(context.Background()); err != nil {
 		return nil, func() {
 			conn.Close()
-		}, fmt.Errorf("cannot ping database")
+		}, fmt.Errorf("cannot ping database: ", err)
 	}
 
 	return conn, func() {
