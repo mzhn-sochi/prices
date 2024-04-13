@@ -2,11 +2,6 @@ name: Deploy prices
 on:
   push:
     branches: [ "main", "master" ]
-env:
-  nats_url: ${{ secrets.NATS_URL }}
-  nats_q_errors: ${{ vars.NATS_QUEUE_ERRORS }}
-  nats_q_status: ${{ vars.NATS_QUEUE_STATUS }}
-  nats_q_validation: ${{ vars.NATS_QUEUE_VALIDATION }}
 
 jobs:
   prepare-env:
@@ -22,9 +17,11 @@ jobs:
         uses: actions/checkout@v3
       - name: Add envs
         run: |
-          echo $nats_url >> .env
-          echo $nats_q_errors >> .env
-          echo $nats_q_status >> .env
+          touch .env
+          echo  NATS_URL=${{ secrets.NATS_URL }} >> .env
+          echo  NATS_QUEUE_ERRORS=${{ vars.NATS_QUEUE_ERRORS }} >> .env
+          echo  NATS_QUEUE_STATUS=${{ vars.NATS_QUEUE_STATUS }} >> .env
+          echo  NATS_QUEUE_VALIDATION=${{ vars.NATS_QUEUE_VALIDATION }} >> .env
           echo $nats_q_validation >> .env
       - name: Lookup env
         run: cat .env
