@@ -24,6 +24,7 @@ jobs:
           
           echo  DB_HOST=${{ vars.DB_HOST }} >> .env
           echo  DB_PORT=${{ vars.DB_PORT }} >> .env
+          echo  DB_PORT_EXTERNAL=${{ vars.DB_PORT_EXTERNAL }} >> .env
           echo  DB_NAME=${{ vars.DB_NAME }} >> .env
           echo  DB_USER=${{ secrets.DB_USER }} >> .env
           echo  DB_PASS=${{ secrets.DB_PASS }} >> .env
