@@ -7,5 +7,5 @@ type Item struct {
 	Measure     struct {
 		Amount uint   `json:"amount"`
 		Unit   string `json:"unit"`
-	}
+	} `json:"measure"`
 }

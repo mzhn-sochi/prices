@@ -31,6 +31,10 @@ type statusReq struct {
 	OperationType string `json:"type"`
 }
 
+type errorReq struct {
+	ErrorMessage string `json:"message"`
+}
+
 func (h *validationHandler) Handle(msg *nats.Msg) {
 	var item domain.Item
 	log.Printf("received new message %v\n", string(msg.Data))
@@ -47,23 +51,27 @@ func (h *validationHandler) Handle(msg *nats.Msg) {
 
 	ok, err := h.uc.PriceIsHigherThanActual(context.Background(), &item)
 	if err != nil {
-		log.Println("error while check price")
-		return
-	}
-	if !ok {
+		log.Println(item)
+		log.Println("error while check price: ", err)
+		data, _ := json.Marshal(&errorReq{ErrorMessage: "Товар отсутсвует в базе социальных"})
 		h.broker.Publish(&nats.Msg{
 			Subject: h.cfg.Nats.Queues.Errors,
 			Header:  msg.Header,
-			Data:    []byte(""),
+			Data:    data,
+		})
+		return
+	}
+	if !ok {
+		data, _ := json.Marshal(&errorReq{ErrorMessage: "Цена не превышает максимально допустимую"})
+		h.broker.Publish(&nats.Msg{
+			Subject: h.cfg.Nats.Queues.Errors,
+			Header:  msg.Header,
+			Data:    data,
 		})
 		return
 	}
 	req := &statusReq{OperationType: "validation"}
-	data, err := json.Marshal(&req)
-	if err != nil {
-		log.Println("error while marshal req")
-		return
-	}
+	data, _ := json.Marshal(&req)
 	if err := h.broker.Publish(&nats.Msg{
 		Subject: h.cfg.Nats.Queues.Status,
 		Header:  msg.Header,

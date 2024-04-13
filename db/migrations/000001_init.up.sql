@@ -8,3 +8,14 @@ CREATE TABLE items
     price      double
 ) ENGINE = MergeTree()
       PRIMARY KEY (item_id);
+
+CREATE TABLE shops
+(
+    district       String,
+    businessEntity String,
+    inn            String,
+    conclusionAt   DATETIME,
+    subjectsCount  UInt8,
+    addresses      String,
+    productNames   String
+) ENGINE = ReplacingMergeTree() order by district;
