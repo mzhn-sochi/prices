@@ -1,20 +1,28 @@
 version: '4.5'
 
 services:
+  clickhouse:
+    container_name: "items_database"
+    hostname: "items_db"
+    image: clickhouse/clickhouse-server:21.3.20.1-alpine
+    volumes:
+      - chdata:/var/lib/clickhouse
+    networks:
+      - main
   prices:
     build:
       context: .
-    container_name: "prices"
+    container_name: "prices_service"
     hostname: "prices"
     env_file:
       - .env
-  clickhouse:
-    container_name: items_database
-    image: clickhouse/clickhouse-server:21.3.20.1-alpine
-    ports:
-      - "18123:8123"
-      - "19000:9000"
-    volumes:
-      - chdata:/var/lib/clickhouse
+    networks:
+      - main
+    depends_on:
+      - clickhouse
 volumes:
   chdata:
+
+networks:
+  main:
+    external: true
