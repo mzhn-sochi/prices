@@ -36,5 +36,9 @@ jobs:
     runs-on: self-hosted
     needs: deploy
     steps:
+      - name: ls
+        run: |
+          ls -al
+          pwd
       - name: Run migrations
         run: migrate -path ./db/migrations -database 'clickhouse://localhost:${{vars.DB_PORT_EXTERNAL}}?username=${{secrets.DB_USER}}&password=${{secrets.DB_PASS}}&database=${{vars.DB_NAME}}
