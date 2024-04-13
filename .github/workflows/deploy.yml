@@ -31,3 +31,9 @@ jobs:
         run: cat .env
       - name: docker-compose
         run: docker-compose up -d
+  migrations:
+    runs-on: self-hosted
+    needs: deploy
+    steps:
+      - name: Run migrations
+        run: migrate -path ./db/migrations -database 'clickhouse://${{vars.DB_HOST}}:${{vars.DB_PORT}}?username=${{secrets.DB_USER}}&password=${{secrets.DB_PASS}}&database=${{vars.DB_NAME}}

@@ -1,4 +1,4 @@
-CREATE TABLE items
+CREATE TABLE IF NOT EXISTS items
 (
     item_id    UUID     default generateUUIDv4(),
     created_at DATETIME default now(),
@@ -9,7 +9,7 @@ CREATE TABLE items
 ) ENGINE = MergeTree()
       PRIMARY KEY (item_id);
 
-CREATE TABLE shops
+CREATE TABLE IF NOT EXISTS shops
 (
     district       String,
     businessEntity String,
