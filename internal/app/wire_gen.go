@@ -54,6 +54,7 @@ func initDB(cfg *config.Config) (driver.Conn, func(), error) {
 			Username: cfg.DB.User,
 			Password: cfg.DB.Pass,
 		},
+		Debug:           true,
 		MaxOpenConns:    10,
 		MaxIdleConns:    5,
 		ConnMaxLifetime: time.Hour,

@@ -3,6 +3,7 @@ package events
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"github.com/nats-io/nats.go"
 	"log"
 	"prices/internal/broker"
@@ -31,6 +32,10 @@ type statusReq struct {
 	OperationType string `json:"type"`
 }
 
+type overpriceReq struct {
+	Percents uint `json:"percents"`
+}
+
 type errorReq struct {
 	ErrorMessage string `json:"message"`
 }
@@ -49,8 +54,8 @@ func (h *validationHandler) Handle(msg *nats.Msg) {
 		return
 	}
 
-	ok, err := h.uc.PriceIsHigherThanActual(context.Background(), &item)
-	if err != nil {
+	overprice, err := h.uc.PriceIsHigherThanActual(context.Background(), &item)
+	if err != nil && !errors.Is(err, usecases.HighPriceError) {
 		log.Println(item)
 		log.Println("error while check price: ", err)
 		data, _ := json.Marshal(&errorReq{ErrorMessage: "Товар отсутсвует в базе социальных"})
@@ -61,7 +66,7 @@ func (h *validationHandler) Handle(msg *nats.Msg) {
 		})
 		return
 	}
-	if !ok {
+	if overprice == 0 {
 		data, _ := json.Marshal(&errorReq{ErrorMessage: "Цена не превышает максимально допустимую"})
 		h.broker.Publish(&nats.Msg{
 			Subject: h.cfg.Nats.Queues.Errors,
@@ -69,15 +74,27 @@ func (h *validationHandler) Handle(msg *nats.Msg) {
 			Data:    data,
 		})
 		return
-	}
-	req := &statusReq{OperationType: "validation"}
-	data, _ := json.Marshal(&req)
-	if err := h.broker.Publish(&nats.Msg{
-		Subject: h.cfg.Nats.Queues.Status,
-		Header:  msg.Header,
-		Data:    data,
-	}); err != nil {
-		log.Println("error while publishing")
-		return
+	} else {
+		oReq := &overpriceReq{Percents: overprice}
+		oData, _ := json.Marshal(&oReq)
+		if err := h.broker.Publish(&nats.Msg{
+			Subject: h.cfg.Nats.Queues.Overprice,
+			Header:  msg.Header,
+			Data:    oData,
+		}); err != nil {
+			log.Println("error while publishing to overprice subject")
+			return
+		}
+
+		sReq := &statusReq{OperationType: "validation"}
+		sData, _ := json.Marshal(&sReq)
+		if err := h.broker.Publish(&nats.Msg{
+			Subject: h.cfg.Nats.Queues.Status,
+			Header:  msg.Header,
+			Data:    sData,
+		}); err != nil {
+			log.Println("error while publishing to validation subject")
+			return
+		}
 	}
 }

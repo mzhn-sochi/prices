@@ -9,6 +9,7 @@ services:
       - chdata:/var/lib/clickhouse
     ports:
       - ${DB_PORT_EXTERNAL}:9000
+      - "8123:8123"
     networks:
       - main
   prices:

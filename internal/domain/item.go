@@ -5,7 +5,7 @@ type Item struct {
 	Description string  `json:"description"`
 	Price       float64 `json:"price"`
 	Measure     struct {
-		Amount uint   `json:"amount"`
-		Unit   string `json:"unit"`
+		Amount float64 `json:"amount"`
+		Unit   string  `json:"unit"`
 	} `json:"measure"`
 }
