@@ -19,3 +19,10 @@ CREATE TABLE IF NOT EXISTS shops
     addresses      String,
     productNames   String
 ) ENGINE = ReplacingMergeTree() order by district;
+
+create table if not exists units
+(
+    id   UUID default generateUUIDv4(),
+    unit String,
+    alt  String
+) ENGINE MergeTree() primary key (id);

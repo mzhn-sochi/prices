@@ -17,7 +17,7 @@ func NewItemsRepository(client driver.Conn) usecases.ItemsRepository {
 
 func (r *ItemsRepository) GetActualPrice(ctx context.Context, itemName string) (float64, string, error) {
 	diff := 0.99
-	query := fmt.Sprintf(`select i.price, i.unit from items i order by ngramSearchCaseInsensitive(name, ?) as diff desc, created_at desc limit 1`)
+	query := fmt.Sprintf(`select i.price, i.unit from items i where (ngramSearchCaseInsensitive(name, ?) as diff) > 0.5 order by diff desc, created_at desc limit 1`)
 	var res struct {
 		Price float64 `ch:"price"`
 		Unit  string  `ch:"unit"`
