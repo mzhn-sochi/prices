@@ -2,6 +2,7 @@ name: Deploy prices
 on:
   push:
     branches: [ "main", "master" ]
+
 jobs:
   prepare-env:
     runs-on: self-hosted
